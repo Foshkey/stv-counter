@@ -12,7 +12,11 @@
       ctrl.quota = stvCounter.quota;
     }
 
-    ctrl.toggleGeneratedExampleForm = function() {
+    ctrl.toggleBallotFormHelp = function () {
+      ctrl.ballotForm.showHelp = !ctrl.ballotForm.showHelp;
+    }
+
+    ctrl.toggleGeneratedExampleForm = function () {
       ctrl.generatedExampleForm.show = !ctrl.generatedExampleForm.show;
     }
 

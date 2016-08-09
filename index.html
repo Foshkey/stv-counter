@@ -9,13 +9,20 @@
   <body ng-app="core" ng-controller="mainController as ctrl" class="row column">
 
     <h1>Single Transferable Vote Counter</h1>
-    <h6>A webapp meant to demonstrate angular service module <a target="_blank" href="https://github.com/Foshkey/stv-counter/blob/master/stvCounter.js">stvCounter.js</a></h6>
+    <p>A webapp meant to demonstrate angular service module <a target="_blank" href="https://github.com/Foshkey/stv-counter/blob/master/stvCounter.js">stvCounter.js</a>, and <a target="_blank" href="https://en.wikipedia.org/wiki/Single_transferable_vote">the STV counting method</a> in general. This uses the <a target="_blank" href="https://en.wikipedia.org/wiki/Droop_quota">Droop method</a> for calculating the quota, and the <a target="_blank" href="https://en.wikipedia.org/wiki/Counting_single_transferable_votes#Wright">Wright method</a> for determining the distribution of surplus votes.</p>
     <hr />
 
     <div class="row">
       <form name="ctrl.ballotForm" class="medium-8 columns" ng-submit="ctrl.countVotes()">
         <h4>Ballot Input</h4>
-        <h6><a href="">How should the ballots be entered?</a></h6>
+
+        <h6><a href="" ng-click="ctrl.toggleBallotFormHelp()">How should ballots be entered?</a></h6>
+        <div ng-show="ctrl.ballotForm.showHelp">
+          <p>A ballot should be entered with most to least desired candidates. <strong>Candidates</strong> should be separated by <strong>one</strong> line, and <strong>ballots</strong> should be separated by <strong>two</strong> lines. For example...</p>
+          <pre>{{"Alice\nBob\nCarl\n\nCarl\nAlice\nBob"}}</pre><br />
+          <p>will enter two ballots: one with Alice, Bob, Carl (Alice being most desired), and another with Carl, Alice, Bob (Carl being most desired).</p>
+        </div>
+
         <textarea ng-model="ctrl.ballotForm.text" rows="12" required></textarea>
         <label>
           How many seats need to be filled?
