@@ -7,6 +7,8 @@
     srvc.ballots = [];
     /** Rounds recorded, in order. */
     srvc.rounds = [];
+    /** Quota Calculated */
+    srvc.quota = 0;
 
     /**
      * Counts the votes and returns elected candidates.
@@ -31,7 +33,7 @@
       });
 
       // Droop method
-      let quota = Math.floor(ballots.length / (seats + 1) + 1);
+      srvc.quota = Math.floor(ballots.length / (seats + 1) + 1);
 
       let candidates = getCandidates(ballots);
       let elected = [];
@@ -51,7 +53,7 @@
       // Determine elected from first round
       candidates.some(function (candidate) {
         // If at or above quota, add to elected.
-        if (firstRound[candidate].votes >= quota) {
+        if (firstRound[candidate].votes >= srvc.quota) {
           elected.push(candidate);
           firstRound[candidate].elected = true;
         }
@@ -70,7 +72,7 @@
         let round = cloneLastRound();
 
         // First, check if we have enough votes
-        if (!haveEnoughVotesToMeetQuota(round, quota)) {
+        if (!haveEnoughVotesToMeetQuota(round)) {
           // Votes cannot be reassigned any more to produce significant results.
           // Return top [#seats] candidates.
           return topCandidates(round, seats);
@@ -79,9 +81,9 @@
         // Check for surplus
         let hasSurplus = false;
         Object.keys(round).some(function (candidate) {
-          if (round[candidate].votes >= quota) {
+          if (round[candidate].votes >= srvc.quota) {
             round[candidate].elected = true;
-            if (round[candidate].votes > quota) {
+            if (round[candidate].votes > srvc.quota) {
               hasSurplus = true;
             }
           }
@@ -89,7 +91,7 @@
         });
         // Reassign votes, based on surplus or elimination.
         if (hasSurplus) {
-          reassignSurplusVotes(round, workBallots, quota);
+          reassignSurplusVotes(round, workBallots);
         }
         else { // Elimination
           eliminateCandidates(round);
@@ -98,7 +100,7 @@
 
         // And another check to see if anybody made it
         Object.keys(round).some(function (candidate) {
-          if (round[candidate].elected || round[candidate].votes >= quota) {
+          if (round[candidate].elected || round[candidate].votes >= srvc.quota) {
             round[candidate].elected = true;
             if (elected.indexOf(candidate) < 0) elected.push(candidate)
           }
@@ -219,13 +221,12 @@
      * @param {string} workBallots[].topCandidate - current top candidate on the work ballot.
      * @param {number} workBallots[].topCandidateIndex - index of the top candidate in [workBallot.ballot].
      * @param {number} workBallots[].voteValue - current value of the ballot's vote, if <1, then other part is assigned to elected candidates elsewhere on ballot.
-     * @param {number} quota
      */
-    function reassignSurplusVotes(round, workBallots, quota) {
+    function reassignSurplusVotes(round, workBallots) {
       Object.keys(round).forEach(function (candidate) {
-        if (round[candidate].elected && round[candidate].votes >= quota) {
-          let voteValue = (round[candidate].votes - quota) / round[candidate].votes;
-          round[candidate].votes = quota;
+        if (round[candidate].elected && round[candidate].votes >= srvc.quota) {
+          let voteValue = (round[candidate].votes - srvc.quota) / round[candidate].votes;
+          round[candidate].votes = srvc.quota;
           workBallots.forEach(function (workBallot) {
             if (candidate === workBallot.topCandidate) {
               workBallot.voteValue = voteValue * workBallot.voteValue;
@@ -261,20 +262,19 @@
     /**
      * Checks if there are enough free votes in the round to be reassigned for a candidate to meet quota.
      * @param {Object.<string, {votes: number, elected: boolean, eliminated: boolean}>} round - STV round to analyze
-     * @param {number} quota
      * @returns {boolean} true if there are enough votes to meet quota.
      */
-    function haveEnoughVotesToMeetQuota(round, quota) {
+    function haveEnoughVotesToMeetQuota(round) {
       let votes = 0;
       Object.keys(round).forEach(function (candidate) {
-        if (round[candidate].votes > quota) {
-          votes += round[candidate].votes - quota;
+        if (round[candidate].votes > srvc.quota) {
+          votes += round[candidate].votes - srvc.quota;
         }
         else if (!round[candidate].elected) {
           votes += round[candidate].votes;
         }
       });
-      return votes >= quota;
+      return votes >= srvc.quota;
     }
 
     /**

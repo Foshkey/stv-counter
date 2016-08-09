@@ -7,6 +7,7 @@
     ctrl.ballots = [];
     ctrl.rounds = [];
     ctrl.elected = [];
+    ctrl.seats = 0;
 
     ctrl.submit = function () {
 
@@ -19,9 +20,11 @@
     }
 
     ctrl.example = function () {
-      ctrl.ballots = getSnacksExample();
-      ctrl.elected = stvCounter.count(3, ctrl.ballots);
+      ctrl.ballots = getAndreaExample();
+      ctrl.seats = 2;
+      ctrl.elected = stvCounter.count(ctrl.seats, ctrl.ballots);
       ctrl.rounds = stvCounter.rounds;
+      ctrl.quota = stvCounter.quota;
     }
 
     function shuffle(array) {

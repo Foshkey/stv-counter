@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>STV Generator</title>
+    <title>STV Counter</title>
     <link href="foundation.min.css" rel="stylesheet" /> 
     <script src="angular.min.js"></script>
     <script src="stvCounter.js"></script>
@@ -8,37 +8,68 @@
   </head>
   <body ng-app="core" ng-controller="mainController as ctrl" class="row column">
 
-    <form ng-submit="ctrl.submit()">
-      <h4>List of Candidates</h4>
-      <textarea ng-model="ctrl.candidatesText" cols="40" rows="8"></textarea>
-      <h4>Number of Votes</h4>
-      <div><input type="number" ng-model="ctrl.votes" /></div>
-      <input type="submit" value="Generate" />
-    </form>
+    <h1>Single Transferable Vote Counter</h1>
+    <h6>A webapp meant to demonstrate angular service module <a target="_blank" href="https://github.com/Foshkey/stv-counter/blob/master/stvCounter.js">stvCounter.js</a></h6>
+    <hr />
 
-    <input type="button" ng-click="ctrl.example()" value="Count Example" /> 
+    <div class="row">
+      <form class="medium-8 columns" ng-submit="ctrl.countVotes()">
+        <h4>Ballot Input</h4>
+        <h6><a href="">How should I input the ballots?</a></h6>
+        <textarea ng-model="ctrl.ballotsText" rows="12" required></textarea>
+        <input type="submit" class="large hollow button" value="Count Votes" /> 
+      </form>
 
-    <h3>Elected</h3>
-    <h6 ng-repeat="elected in ctrl.elected track by $index">{{elected}}</h6>
+      <div class="medium-4 columns">
+        <h4>Examples</h4>
+        <input type="button" class="hollow button" ng-click="ctrl.fillAndreaExample()" value="Andrea" />
+        <input type="button" class="hollow button" ng-click="ctrl.fillSnacksExample()" value="Snacks" />
+        <input type="button" class="hollow button" ng-click="ctrl.revealGeneratedExampleForm()" value="Randomly Generated" />
+      </div>
+  <!--
+      <form ng-submit="ctrl.submit()">
+        <h4>List of Candidates</h4>
+        <textarea ng-model="ctrl.candidatesText" cols="40" rows="8"></textarea>
+        <h4>Number of Votes</h4>
+        <div><input type="number" ng-model="ctrl.votes" /></div>
+        <input type="submit" class="hollow button" value="Generate" />
+      </form>
 
-    <h3>Rounds</h3>
-    <div class="row small-up-1 medium-up-2 large-up-3">
-      <div class="columns" ng-repeat="round in ctrl.rounds track by $index">
-        <h5>Round {{$index + 1}}</h5>
-        <h6 ng-repeat="(candidate, value) in round">
-          {{candidate}}: {{value.votes}} {{value.eliminated ? "Eliminated" : ""}}{{value.elected ? "Elected" : ""}}
-        </h6>
+      <input type="button" class="hollow button" ng-click="ctrl.example()" value="Count Example" /> 
+  -->
+    </div>
+    <div class="callout success" ng-show="ctrl.elected.length > 0">
+      <h3>Elected</h3>
+      <h6>Seats: {{ctrl.seats}}<h6>
+      <h5 ng-repeat="elected in ctrl.elected track by $index">{{elected}}</h5>
+    </div>
+
+    <div class="primary callout" ng-show="ctrl.rounds.length > 0">
+      <h3>Rounds</h3>
+      <h6>Quota: {{ctrl.quota}}<h6>
+      <div class="row small-up-1 medium-up-2 large-up-3">
+        <div class="columns" ng-repeat="round in ctrl.rounds track by $index">
+          <div class="callout">
+            <h5>Round {{$index + 1}}</h5>
+            <h6 ng-repeat="(candidate, value) in round">
+              {{candidate}}: {{value.votes}} {{value.eliminated ? "Eliminated" : ""}}{{value.elected ? "Elected" : ""}}
+            </h6>
+          </div>
+        </div>
       </div>
     </div>
 
-    <h3>Ballots</h3>
-    <div class="row small-up-2 medium-up-4 large-up-6">
-      <div class="columns" ng-repeat="ballot in ctrl.ballots track by $index">
-        <div ng-repeat="candidate in ballot track by $index">
-          {{$index + 1}} - {{candidate}}
+    <div class="primary callout" ng-show="ctrl.ballots.length > 0">
+      <h3>Ballots</h3>
+      <div class="row small-up-2 medium-up-4 large-up-6">
+        <div class="columns" ng-repeat="ballot in ctrl.ballots track by $index">
+          <div class="callout">
+            <div ng-repeat="candidate in ballot track by $index">
+              {{$index + 1}} - {{candidate}}
+            </div>
+          </div>
         </div>
-        <br />
-      </div>
+      </div>  
     </div>
 
     <footer>
