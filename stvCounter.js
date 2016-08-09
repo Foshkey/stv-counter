@@ -8,6 +8,7 @@
 
     srvc.count = function (seats, ballots = srvc.ballots) {
       srvc.ballots = ballots;
+      srvc.rounds = [];
 
       // Construct work ballots, which are ballots array with more properties
       let workBallots = [];
@@ -38,12 +39,11 @@
         // Tally up first choice votes
         firstRound[ballot[0]].votes++;
       });
-      srvc.rounds.push(firstRound);
 
       // Determine elected from first round
       candidates.some(function (candidate) {
         // If at or above quota, add to elected.
-        if (firstRound[candidate] >= quota) {
+        if (firstRound[candidate].votes >= quota) {
           elected.push(candidate);
           firstRound[candidate].elected = true;
         }
@@ -51,6 +51,7 @@
         if (elected.length >= seats)
           return true;
       });
+      srvc.rounds.push(firstRound);
 
       // Quick check before going into the real meat
       if (elected.length >= seats)
@@ -59,6 +60,13 @@
       // Continue looping until we fill all seats.
       while (elected.length < seats) {
         let round = cloneLastRound();
+
+        // First, check if we have enough votes
+        if (!haveEnoughVotesToMeetQuota(round, quota)) {
+          // Votes cannot be reassigned any more to produce significant results.
+          // Return top [#seats] candidates.
+          return topCandidates(round, seats);
+        }
 
         // Check for surplus
         let hasSurplus = false;
@@ -71,8 +79,6 @@
           }
           return hasSurplus;
         });
-
-        console.log("Surplus: " + hasSurplus);
         // Reassign votes, based on surplus or elimination.
         if (hasSurplus) {
           reassignSurplusVotes(round, workBallots, quota);
@@ -94,7 +100,6 @@
 
         // Check for duplicate round
         if (JSON.stringify(round) === JSON.stringify(cloneLastRound())) {
-          console.log("Found Duplicate");
           break;
         }
 
@@ -105,6 +110,10 @@
       return elected;
     }
 
+    /**
+     * Gets all possible candidates from srvc.ballots.
+     * @returns {string[]} list of candidates.
+     */
     function getCandidates() {
       let candidates = [];
       srvc.ballots.forEach(function (ballot) {
@@ -117,6 +126,11 @@
       return candidates;
     }
 
+    /**
+     * Generates a blank round based on [candidates], defaulting all properties to primitive 0 (boolean -> false).
+     * @param {string[]} candidates - list of candidates to generate round for.
+     * @returns {Object.<string, {votes: number, elected: boolean, eliminated: boolean}>} a blank round.
+     */
     function genBlankRound(candidates) {
       let round = {};
       candidates.forEach(function (candidate) {
@@ -125,11 +139,33 @@
       return round;
     }
 
+    /**
+     * Clones the most recent round using JSON.stringify hack.
+     * @returns {Object.<string, {votes: number, elected: boolean, eliminated: boolean}>} most recent round as a new cloned object.  
+     */
     function cloneLastRound() {
       if (srvc.rounds.length == 0) return {};
       return JSON.parse(JSON.stringify(srvc.rounds[srvc.rounds.length - 1]));
     }
 
+    /**
+     * Goes through the round and marks all candidates with the lowest votes as eliminated.
+     * @param {Object.<string, {votes: number, elected: boolean, eliminated: boolean}>} round - STV round to analyze and change. 
+     */
+    function eliminateCandidates(round) {
+      let leastNumberOfVotes = getLeastNumberOfVotes(round);
+      Object.keys(round).forEach(function (candidate) {
+        if (round[candidate].votes == leastNumberOfVotes) {
+          round[candidate].eliminated = true;
+        }
+      });
+    }
+    
+    /**
+     * Figures out the least number of votes in the [round]
+     * @param {Object.<string, {votes: number, elected: boolean, eliminated: boolean}>} round - STV round to analyze and change.
+     * @returns {number} least number of votes.
+     */
     function getLeastNumberOfVotes(round) {
       let least = 0;
       let foundStartingValue = false;
@@ -145,29 +181,38 @@
       return least;
     }
 
-    function eliminateCandidates(round) {
-      let leastNumberOfVotes = getLeastNumberOfVotes(round);
-      console.log(leastNumberOfVotes);
-      Object.keys(round).forEach(function (candidate) {
-        if (round[candidate].votes == leastNumberOfVotes) {
-          round[candidate].eliminated = true;
-        }
-      });
-    }
-
+    /**
+     * Reassigns all eliminated votes based on eliminated candidates in the round.
+     * @param {Object.<string, {votes: number, elected: boolean, eliminated: boolean}>} round - STV round to analyze and change.
+     * @param {Object[]} workBallots - enhanced ballot objects to work with.
+     * @param {string[]} workBallots[].ballot - list of candidates in preferred order.
+     * @param {string} workBallots[].topCandidate - current top candidate on the work ballot.
+     * @param {number} workBallots[].topCandidateIndex - index of the top candidate in [workBallot.ballot].
+     * @param {number} workBallots[].voteValue - current value of the ballot's vote, if <1, then other part is assigned to elected candidates elsewhere on ballot.
+     */
     function reassignEliminatedVotes(round, workBallots) {
       Object.keys(round).forEach(function (candidate) {
         if (round[candidate].eliminated) {
           round[candidate].votes = 0;
           workBallots.forEach(function (workBallot) {
             if (candidate === workBallot.topCandidate) {
-              reassignVote(candidate, workBallot, round);
+              reassignVote(workBallot, round);
             }
           });
         }
       });
     }
 
+    /**
+     * Reassigns all surplus votes based on elected candidates in the round.
+     * @param {Object.<string, {votes: number, elected: boolean, eliminated: boolean}>} round - STV round to analyze and change.
+     * @param {Object[]} workBallots - enhanced ballot objects to work with.
+     * @param {string[]} workBallots[].ballot - list of candidates in preferred order.
+     * @param {string} workBallots[].topCandidate - current top candidate on the work ballot.
+     * @param {number} workBallots[].topCandidateIndex - index of the top candidate in [workBallot.ballot].
+     * @param {number} workBallots[].voteValue - current value of the ballot's vote, if <1, then other part is assigned to elected candidates elsewhere on ballot.
+     * @param {number} quota
+     */
     function reassignSurplusVotes(round, workBallots, quota) {
       Object.keys(round).forEach(function (candidate) {
         if (round[candidate].elected && round[candidate].votes >= quota) {
@@ -176,14 +221,23 @@
           workBallots.forEach(function (workBallot) {
             if (candidate === workBallot.topCandidate) {
               workBallot.voteValue = voteValue * workBallot.voteValue;
-              reassignVote(candidate, workBallot, round);
+              reassignVote(workBallot, round);
             }
           })
         }
       });
     }
 
-    function reassignVote(candidate, workBallot, round) {
+    /**
+     * Reassigns vote to next top candidate on [workBallot].
+     * @param {Object} workBallot - enhanced ballot object to work with.
+     * @param {string[]} workBallot.ballot - list of candidates in preferred order.
+     * @param {string} workBallot.topCandidate - current top candidate on the work ballot.
+     * @param {number} workBallot.topCandidateIndex - index of the top candidate in [workBallot.ballot].
+     * @param {number} workBallot.voteValue - current value of the ballot's vote, if <1, then other part is assigned to elected candidates elsewhere on ballot.
+     * @param {Object.<string, {votes: number, elected: boolean, eliminated: boolean}>} round - STV round to analyze
+     */
+    function reassignVote(workBallot, round) {
       if (workBallot.topCandidateIndex + 1 == workBallot.ballot.length) return;
 
       for (; workBallot.topCandidateIndex < workBallot.ballot.length; workBallot.topCandidateIndex++) {
@@ -196,14 +250,59 @@
       }
     }
 
-    function isTopCandidate(candidate, ballot, round) {
-      for (let i = 0; i < ballot.length; i++) {
-        if (!round[ballot[i]].eliminated &&
-            candidate === ballot[i]) {
-          return true;
+    /**
+     * Checks if there are enough free votes in the round to be reassigned for a candidate to meet quota.
+     * @param {Object.<string, {votes: number, elected: boolean, eliminated: boolean}>} round - STV round to analyze
+     * @param {number} quota
+     * @returns {boolean} true if there are enough votes to meet quota.
+     */
+    function haveEnoughVotesToMeetQuota(round, quota) {
+      let votes = 0;
+      Object.keys(round).forEach(function (candidate) {
+        if (round[candidate].votes > quota) {
+          votes += round[candidate].votes - quota;
         }
+        else if (!round[candidate].elected) {
+          votes += round[candidate].votes;
+        }
+      });
+      return votes >= quota;
+    }
+
+    /**
+     * Finds the top [seats] candidates based on votes.
+     * @param {Object.<string, {votes: number, elected: boolean, eliminated: boolean}>} round - STV round to analyze
+     * @param {number} seats - number of seats to fill in this election.
+     * @returns {string[]} Top [seats] candidates, sorted by votes.
+     */
+    function topCandidates(round, seats) {
+
+      // Convert round to list
+      let list = [];
+      Object.keys(round).forEach(function (candidate) {
+        list.push({ candidate: candidate, votes: round[candidate].votes });
+      });
+
+      // sort ...
+      let sortedList = list.sort(roundCompare);
+
+      // ... and fill in up to [seats]
+      let elected = [];
+      for (let i = 0; i < seats && i < sortedList.length; i++) {
+        elected.push(sortedList[i].candidate);
       }
-      return false;
+
+      return elected;
+    }
+
+    /**
+     * Comparison function for candidate votes.
+     * @param {number} CandidateA.votes
+     * @param {number} CandidateB.votes
+     * @returns {number} Standard sorting difference for greatest to least.
+     */
+    function roundCompare(candidateA, candidateB) {
+      return candidateB.votes - candidateA.votes;
     }
 
   })

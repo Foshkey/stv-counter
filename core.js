@@ -19,8 +19,8 @@
     }
 
     ctrl.example = function () {
-      ctrl.ballots = getExample();
-      ctrl.elected = stvCounter.count(2, ctrl.ballots);
+      ctrl.ballots = getSnacksExample();
+      ctrl.elected = stvCounter.count(3, ctrl.ballots);
       ctrl.rounds = stvCounter.rounds;
     }
 
@@ -36,7 +36,7 @@
       return array;
     }
 
-    function getExample() {
+    function getAndreaExample() {
       let ballots = [];
       for (let i = 0; i < 16; i++) {
         ballots.push(["Andrea", "Brad", "Carter", "Delilah"]);
@@ -46,6 +46,29 @@
       }
       for (let i = 0; i < 17; i++) {
         ballots.push(["Delilah", "Andrea", "Brad", "Carter"]);
+      }
+      return ballots;
+    }
+
+    function getSnacksExample() {
+      let ballots = [];
+      for (let i = 0; i < 4; i++) {
+        ballots.push(["Oranges"]);
+      }
+      for (let i = 0; i < 2; i++) {
+        ballots.push(["Pears", "Oranges"]);
+      }
+      for (let i = 0; i < 8; i++) {
+        ballots.push(["Chocolate", "Strawberries"]);
+      }
+      for (let i = 0; i < 4; i++) {
+        ballots.push(["Chocolate", "Sweets"]);
+      }
+      for (let i = 0; i < 1; i++) {
+        ballots.push(["Strawberries"]);
+      }
+      for (let i = 0; i < 1; i++) {
+        ballots.push(["Sweets"]);
       }
       return ballots;
     }
