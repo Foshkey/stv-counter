@@ -3,9 +3,17 @@
   .service("stvCounter", function () {
     let srvc = this;
 
+    /** All ballots to be used */
     srvc.ballots = [];
+    /** Rounds recorded, in order. */
     srvc.rounds = [];
 
+    /**
+     * Counts the votes and returns elected candidates.
+     * @param {number} seats - Number of seats to fill.
+     * @param {string[][]} [ballots] - Ballots to be counted.
+     * @returns {string[]} Elected candidates.
+     */
     srvc.count = function (seats, ballots = srvc.ballots) {
       srvc.ballots = ballots;
       srvc.rounds = [];
