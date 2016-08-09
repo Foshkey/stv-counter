@@ -75,7 +75,9 @@
         if (!haveEnoughVotesToMeetQuota(round)) {
           // Votes cannot be reassigned any more to produce significant results.
           // Return top [#seats] candidates.
-          return topCandidates(round, seats);
+          elected = topCandidates(round, seats);
+          srvc.rounds.push(round);
+          return elected;
         }
 
         // Check for surplus
@@ -297,6 +299,7 @@
       // ... and fill in up to [seats]
       let elected = [];
       for (let i = 0; i < seats && i < sortedList.length; i++) {
+        round[sortedList[i].candidate].elected = true;
         elected.push(sortedList[i].candidate);
       }
 
