@@ -22,7 +22,7 @@
         workBallots.push(workBallot);
       });
 
-      // Hare method
+      // Droop method
       let quota = Math.floor(ballots.length / (seats + 1) + 1);
 
       let candidates = getCandidates(ballots);
