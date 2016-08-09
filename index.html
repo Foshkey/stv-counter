@@ -13,13 +13,13 @@
     <hr />
 
     <div class="row">
-      <form class="medium-8 columns" ng-submit="ctrl.countVotes()">
+      <form name="ctrl.ballotForm" class="medium-8 columns" ng-submit="ctrl.countVotes()">
         <h4>Ballot Input</h4>
         <h6><a href="">How should the ballots be entered?</a></h6>
-        <textarea ng-model="ctrl.ballotsText" rows="12" required></textarea>
+        <textarea ng-model="ctrl.ballotForm.text" rows="12" required></textarea>
         <label>
           How many seats need to be filled?
-          <input type="number" ng-model="ctrl.seats" required />
+          <input type="number" ng-model="ctrl.ballotForm.seats" required />
         </label>
         <input type="submit" class="large hollow button" value="Count Votes" /> 
       </form>

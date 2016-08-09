@@ -3,6 +3,15 @@
   .controller("mainController", function (stvCounter) {
     var ctrl = this;
 
+    ctrl.countVotes = function () {
+      ctrl.ballots = parseBallotsText(ctrl.ballotForm.text);
+      ctrl.seats = ctrl.ballotForm.seats;
+
+      ctrl.elected = stvCounter.count(ctrl.seats, ctrl.ballots);
+      ctrl.rounds = stvCounter.rounds;
+      ctrl.quota = stvCounter.quota;
+    }
+
     ctrl.toggleGeneratedExampleForm = function() {
       ctrl.generatedExampleForm.show = !ctrl.generatedExampleForm.show;
     }
@@ -29,8 +38,8 @@
     }
 
     function fillForm(ballots, seats) {
-      ctrl.ballotsText = convertBallotsToText(ballots);
-      ctrl.seats = seats;
+      ctrl.ballotForm.text = convertBallotsToText(ballots);
+      ctrl.ballotForm.seats = seats;
     }
 
     function shuffle(array) {
@@ -54,6 +63,16 @@
         text += "\n"
       });
       return text.trim();
+    }
+
+    function parseBallotsText(text) {
+      let ballots = [];
+      let ballotTexts = text.split(/\r?\n\r?\n/);
+      ballotTexts.forEach(function (ballotText) {
+        let ballot = ballotText.split(/\r?\n/);
+        ballots.push(ballot);
+      });
+      return ballots;
     }
 
     function getAndreaExample() {
