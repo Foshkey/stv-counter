@@ -3,28 +3,34 @@
   .controller("mainController", function (stvCounter) {
     var ctrl = this;
 
-    ctrl.candidates = [];
-    ctrl.ballots = [];
-    ctrl.rounds = [];
-    ctrl.elected = [];
-    ctrl.seats = 0;
-
-    ctrl.submit = function () {
-
-      ctrl.candidates = ctrl.candidatesText.split(/\r?\n/);
-      ctrl.ballots = [];
-
-      for (var i = 0; i < ctrl.votes; i++) {
-        ctrl.ballots.push(shuffle(ctrl.candidates).slice(0));
-      }
+    ctrl.toggleGeneratedExampleForm = function() {
+      ctrl.generatedExampleForm.show = !ctrl.generatedExampleForm.show;
     }
 
-    ctrl.example = function () {
-      ctrl.ballots = getAndreaExample();
-      ctrl.seats = 2;
-      ctrl.elected = stvCounter.count(ctrl.seats, ctrl.ballots);
-      ctrl.rounds = stvCounter.rounds;
-      ctrl.quota = stvCounter.quota;
+    ctrl.fillAndreaExample = function () {
+      let ballots = getAndreaExample();
+      fillForm(ballots, 2);
+    }
+
+    ctrl.fillSnacksExample = function () {
+      let ballots = getSnacksExample();
+      fillForm(ballots, 3);
+    }
+
+    ctrl.fillGeneratedExample = function () {
+      let candidates = ctrl.generatedExampleForm.candidatesText.split(/\r?\n/);
+      let ballots = [];
+
+      for (var i = 0; i < ctrl.generatedExampleForm.votes; i++) {
+        ballots.push(shuffle(candidates).slice(0));
+      }
+
+      fillForm(ballots, ctrl.generatedExampleForm.seats)
+    }
+
+    function fillForm(ballots, seats) {
+      ctrl.ballotsText = convertBallotsToText(ballots);
+      ctrl.seats = seats;
     }
 
     function shuffle(array) {
@@ -37,6 +43,17 @@
         array[randomIndex] = temporaryValue;
       }
       return array;
+    }
+
+    function convertBallotsToText(ballots) {
+      let text = "";
+      ballots.forEach(function (ballot) {
+        ballot.forEach(function (candidate) {
+          text += candidate + "\n";
+        });
+        text += "\n"
+      });
+      return text.trim();
     }
 
     function getAndreaExample() {

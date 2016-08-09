@@ -15,29 +15,40 @@
     <div class="row">
       <form class="medium-8 columns" ng-submit="ctrl.countVotes()">
         <h4>Ballot Input</h4>
-        <h6><a href="">How should I input the ballots?</a></h6>
+        <h6><a href="">How should the ballots be entered?</a></h6>
         <textarea ng-model="ctrl.ballotsText" rows="12" required></textarea>
+        <label>
+          How many seats need to be filled?
+          <input type="number" ng-model="ctrl.seats" required />
+        </label>
         <input type="submit" class="large hollow button" value="Count Votes" /> 
       </form>
 
-      <div class="medium-4 columns">
+      <div class="medium-4 columns" style="border-left: 1px solid #CCC;">
         <h4>Examples</h4>
         <input type="button" class="hollow button" ng-click="ctrl.fillAndreaExample()" value="Andrea" />
         <input type="button" class="hollow button" ng-click="ctrl.fillSnacksExample()" value="Snacks" />
-        <input type="button" class="hollow button" ng-click="ctrl.revealGeneratedExampleForm()" value="Randomly Generated" />
-      </div>
-  <!--
-      <form ng-submit="ctrl.submit()">
-        <h4>List of Candidates</h4>
-        <textarea ng-model="ctrl.candidatesText" cols="40" rows="8"></textarea>
-        <h4>Number of Votes</h4>
-        <div><input type="number" ng-model="ctrl.votes" /></div>
-        <input type="submit" class="hollow button" value="Generate" />
-      </form>
+        <input type="button" class="hollow button" ng-click="ctrl.toggleGeneratedExampleForm()" value="Randomly Generated" />
 
-      <input type="button" class="hollow button" ng-click="ctrl.example()" value="Count Example" /> 
-  -->
+        <form name="ctrl.generatedExampleForm" ng-show="ctrl.generatedExampleForm.show" ng-submit="ctrl.fillGeneratedExample()">
+          <p>Alright, I'll generate some random ballots for you, but I need some parameters.</p>
+          <label>
+            Who are the candidates? Separate by lines.
+            <textarea ng-model="ctrl.generatedExampleForm.candidatesText" rows="8" required></textarea>
+          </label>
+          <label>
+            How many ballots (or total votes)?
+            <input type="number" ng-model="ctrl.generatedExampleForm.votes" required />
+          </label>
+          <label>
+            How many seats need to be filled?
+            <input type="number" ng-model="ctrl.generatedExampleForm.seats" required />
+          </label>
+          <input type="submit" class="hollow button" value="Generate" />
+        </form>
+      </div>
     </div>
+
     <div class="callout success" ng-show="ctrl.elected.length > 0">
       <h3>Elected</h3>
       <h6>Seats: {{ctrl.seats}}<h6>
@@ -82,7 +93,7 @@
       <div class="medium-4 columns">
         <strong>Built With</strong><br />
           <a target="_blank" href="https://angularjs.org">AngularJS</a><br />
-          <a target="_blank" href="http://foundation.zurb.com/">Foundation 6</a><br />
+          <a target="_blank" href="http://foundation.zurb.com/">Foundation 6 CSS</a><br />
         </div>
       <div class="medium-4 columns">
         <a target="_blank" href="https://github.com/Foshkey/stv-counter">GitHub Repository</a>
