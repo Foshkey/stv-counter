@@ -9,6 +9,18 @@
     srvc.count = function (seats, ballots = srvc.ballots) {
       srvc.ballots = ballots;
 
+      // Construct work ballots, which are ballots array with more properties
+      let workBallots = [];
+      ballots.forEach(function (ballot) {
+        let workBallot = {
+          ballot: ballot,
+          topCandidate: ballot[0],
+          topCandidateIndex: 0,
+          voteValue: 1
+        };
+        workBallots.push(workBallot);
+      });
+
       // Hare method
       let quota = Math.floor(ballots.length / (seats + 1) + 1);
 
@@ -60,13 +72,14 @@
           return hasSurplus;
         });
 
+        console.log("Surplus: " + hasSurplus);
         // Reassign votes, based on surplus or elimination.
         if (hasSurplus) {
-          reassignSurplusVotes(round, quota);
+          reassignSurplusVotes(round, workBallots, quota);
         }
         else { // Elimination
           eliminateCandidates(round);
-          reassignEliminatedVotes(round);
+          reassignEliminatedVotes(round, workBallots);
         }
 
         // And another check to see if anybody made it
@@ -126,7 +139,7 @@
           least = round[candidate].votes;
         }
         if (!round[candidate].eliminated && round[candidate].votes < least && foundStartingValue) {
-          least = round[candidate];
+          least = round[candidate].votes;
         }
       });
       return least;
@@ -134,6 +147,7 @@
 
     function eliminateCandidates(round) {
       let leastNumberOfVotes = getLeastNumberOfVotes(round);
+      console.log(leastNumberOfVotes);
       Object.keys(round).forEach(function (candidate) {
         if (round[candidate].votes == leastNumberOfVotes) {
           round[candidate].eliminated = true;
@@ -141,43 +155,42 @@
       });
     }
 
-    function reassignEliminatedVotes(round) {
+    function reassignEliminatedVotes(round, workBallots) {
       Object.keys(round).forEach(function (candidate) {
         if (round[candidate].eliminated) {
-          srvc.ballots.forEach(function (ballot) {
-            if (isTopCandidate(candidate, ballot, round)) {
-              round[candidate].votes--;
-              reassignVote(candidate, ballot, round, 1);
+          round[candidate].votes = 0;
+          workBallots.forEach(function (workBallot) {
+            if (candidate === workBallot.topCandidate) {
+              reassignVote(candidate, workBallot, round);
             }
           });
         }
       });
-      console.log(round);
     }
 
-    function reassignSurplusVotes(round, quota) {
+    function reassignSurplusVotes(round, workBallots, quota) {
       Object.keys(round).forEach(function (candidate) {
         if (round[candidate].elected && round[candidate].votes >= quota) {
           let voteValue = (round[candidate].votes - quota) / round[candidate].votes;
           round[candidate].votes = quota;
-          srvc.ballots.forEach(function (ballot) {
-            if (isTopCandidate(candidate, ballot, round)) {
-              reassignVote(candidate, ballot, round, voteValue);
+          workBallots.forEach(function (workBallot) {
+            if (candidate === workBallot.topCandidate) {
+              workBallot.voteValue = voteValue * workBallot.voteValue;
+              reassignVote(candidate, workBallot, round);
             }
           })
         }
       });
     }
 
-    function reassignVote(candidate, ballot, round, voteValue) {
-      let index = ballot.indexOf(candidate);
-      if (index < 0 || index >= ballot.length - 1)
-        return;
-      index++;
-      for (; index < ballot.length; index++) {
-        let candidate = ballot[index];
-        if (!round[candidate].eliminated && !round[candidate].elected) {
-          round[candidate].votes += voteValue;
+    function reassignVote(candidate, workBallot, round) {
+      if (workBallot.topCandidateIndex + 1 == workBallot.ballot.length) return;
+
+      for (; workBallot.topCandidateIndex < workBallot.ballot.length; workBallot.topCandidateIndex++) {
+        workBallot.topCandidate = workBallot.ballot[workBallot.topCandidateIndex];
+        if (!round[workBallot.topCandidate].eliminated &&
+            !round[workBallot.topCandidate].elected) {
+          round[workBallot.topCandidate].votes += workBallot.voteValue;
           break;
         }
       }
