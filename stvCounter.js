@@ -98,6 +98,9 @@
         else { // Elimination
           eliminateCandidates(round);
           reassignEliminatedVotes(round, workBallots);
+          if (checkTie(round, seats)) {
+            return elected;
+          }
         }
 
         // And another check to see if anybody made it
@@ -171,6 +174,22 @@
           round[candidate].eliminated = true;
         }
       });
+    }
+
+    /**
+     * Checks if there is a case of there are too few candidates to fill all seats, in which case would be a tie.
+     * @param {Object.<string, {votes: number, elected: boolean, eliminated: boolean}>} round - STV round to analyze.
+     * @param {number} numberOfSeats - number of seats that need to be filled.
+     * @returns {boolean} true if there is a tie.
+     */
+    function checkTie(round, numberOfSeats) {
+      let validCandidates = 0;
+      Object.keys(round).forEach(function (candidate) {
+        if (!round[candidate].eliminated) {
+          validCandidates++;
+        }
+      });
+      return validCandidates < numberOfSeats;
     }
     
     /**

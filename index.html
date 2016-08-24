@@ -59,10 +59,11 @@
       </div>
     </div>
 
-    <div class="callout success" ng-show="ctrl.elected.length > 0">
+    <div class="callout success" ng-show="ctrl.elected.length > 0 || ctrl.tie">
       <h3>Elected</h3>
       <h6>Seats - {{ctrl.seats}}</h6>
-      <div class="callout">
+      <strong ng-show="ctrl.tie" style="color: red;">There was a tie. View the rounds for more details.</strong>
+      <div class="callout" ng-show="ctrl.elected.length > 0">
         <h5 ng-repeat="elected in ctrl.elected track by $index">{{elected}}</h5>
       </div>
     </div>

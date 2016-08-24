@@ -10,6 +10,7 @@
       ctrl.elected = stvCounter.count(ctrl.seats, ctrl.ballots);
       ctrl.rounds = stvCounter.rounds;
       ctrl.quota = stvCounter.quota;
+      ctrl.tie = ctrl.elected.length < ctrl.seats;
     }
 
     ctrl.toggleBallotFormHelp = function () {
