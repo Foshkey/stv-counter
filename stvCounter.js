@@ -1,7 +1,7 @@
 (function () {
   angular.module("stvCounter", [])
   .service("stvCounter", function () {
-    let srvc = this;
+    var srvc = this;
 
     /** All ballots to be used */
     srvc.ballots = [];
@@ -21,9 +21,9 @@
       srvc.rounds = [];
 
       // Construct work ballots, which are ballots array with more properties
-      let workBallots = [];
+      var workBallots = [];
       ballots.forEach(function (ballot) {
-        let workBallot = {
+        var workBallot = {
           ballot: ballot,
           topCandidate: ballot[0],
           topCandidateIndex: 0,
@@ -35,8 +35,8 @@
       // Droop method
       srvc.quota = Math.floor(ballots.length / (seats + 1) + 1);
 
-      let candidates = getCandidates(ballots);
-      let elected = [];
+      var candidates = getCandidates(ballots);
+      var elected = [];
 
       // Quick checks before counting
       if (seats <= 0 || seats > candidates.length) {
@@ -44,7 +44,7 @@
       }
       
       // Loop through ballots' first choice
-      let firstRound = genBlankRound(candidates);
+      var firstRound = genBlankRound(candidates);
       ballots.forEach(function (ballot) {
         // Tally up first choice votes
         firstRound[ballot[0]].votes++;
@@ -69,7 +69,7 @@
 
       // Continue looping until we fill all seats.
       while (elected.length < seats) {
-        let round = cloneLastRound();
+        var round = cloneLastRound();
 
         // First, check if we have enough votes
         if (!haveEnoughVotesToMeetQuota(round)) {
@@ -81,7 +81,7 @@
         }
 
         // Check for surplus
-        let hasSurplus = false;
+        var hasSurplus = false;
         Object.keys(round).some(function (candidate) {
           if (round[candidate].votes >= srvc.quota) {
             round[candidate].elected = true;
@@ -130,7 +130,7 @@
      * @returns {string[]} list of candidates.
      */
     function getCandidates() {
-      let candidates = [];
+      var candidates = [];
       srvc.ballots.forEach(function (ballot) {
         ballot.forEach(function (candidate) {
           if (candidates.indexOf(candidate) < 0) {
@@ -147,7 +147,7 @@
      * @returns {Object.<string, {votes: number, elected: boolean, eliminated: boolean}>} a blank round.
      */
     function genBlankRound(candidates) {
-      let round = {};
+      var round = {};
       candidates.forEach(function (candidate) {
         round[candidate] = { votes: 0, elected: false, eliminated: false };
       })
@@ -168,7 +168,7 @@
      * @param {Object.<string, {votes: number, elected: boolean, eliminated: boolean}>} round - STV round to analyze and change. 
      */
     function eliminateCandidates(round) {
-      let leastNumberOfVotes = getLeastNumberOfVotes(round);
+      var leastNumberOfVotes = getLeastNumberOfVotes(round);
       Object.keys(round).forEach(function (candidate) {
         if (round[candidate].votes == leastNumberOfVotes) {
           round[candidate].eliminated = true;
@@ -183,7 +183,7 @@
      * @returns {boolean} true if there is a tie.
      */
     function checkTie(round, numberOfSeats) {
-      let validCandidates = 0;
+      var validCandidates = 0;
       Object.keys(round).forEach(function (candidate) {
         if (!round[candidate].eliminated) {
           validCandidates++;
@@ -198,8 +198,8 @@
      * @returns {number} least number of votes.
      */
     function getLeastNumberOfVotes(round) {
-      let least = 0;
-      let foundStartingValue = false;
+      var least = 0;
+      var foundStartingValue = false;
       Object.keys(round).forEach(function (candidate) {
         if (!foundStartingValue && !round[candidate].eliminated) {
           foundStartingValue = true;
@@ -246,7 +246,7 @@
     function reassignSurplusVotes(round, workBallots) {
       Object.keys(round).forEach(function (candidate) {
         if (round[candidate].elected && round[candidate].votes >= srvc.quota) {
-          let voteValue = (round[candidate].votes - srvc.quota) / round[candidate].votes;
+          var voteValue = (round[candidate].votes - srvc.quota) / round[candidate].votes;
           round[candidate].votes = srvc.quota;
           workBallots.forEach(function (workBallot) {
             if (candidate === workBallot.topCandidate) {
@@ -286,7 +286,7 @@
      * @returns {boolean} true if there are enough votes to meet quota.
      */
     function haveEnoughVotesToMeetQuota(round) {
-      let votes = 0;
+      var votes = 0;
       Object.keys(round).forEach(function (candidate) {
         if (round[candidate].votes > srvc.quota) {
           votes += round[candidate].votes - srvc.quota;
@@ -307,17 +307,17 @@
     function topCandidates(round, seats) {
 
       // Convert round to list
-      let list = [];
+      var list = [];
       Object.keys(round).forEach(function (candidate) {
         list.push({ candidate: candidate, votes: round[candidate].votes });
       });
 
       // sort ...
-      let sortedList = list.sort(roundCompare);
+      var sortedList = list.sort(roundCompare);
 
       // ... and fill in up to [seats]
-      let elected = [];
-      for (let i = 0; i < seats && i < sortedList.length; i++) {
+      var elected = [];
+      for (var i = 0; i < seats && i < sortedList.length; i++) {
         round[sortedList[i].candidate].elected = true;
         elected.push(sortedList[i].candidate);
       }
