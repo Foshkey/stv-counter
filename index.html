@@ -90,6 +90,7 @@
 
     <div class="primary callout" ng-show="ctrl.ballots.length > 0">
       <h3>Ballots</h3>
+      <h6>Votes Cast - {{ctrl.ballots.length}}<h6>
       <div class="row small-up-2 medium-up-4 large-up-6">
         <div class="columns" ng-repeat="ballot in ctrl.ballots track by $index">
           <div class="callout">
