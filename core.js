@@ -22,18 +22,18 @@
     }
 
     ctrl.fillAndreaExample = function () {
-      let ballots = getAndreaExample();
+      var ballots = getAndreaExample();
       fillForm(ballots, 2);
     }
 
     ctrl.fillSnacksExample = function () {
-      let ballots = getSnacksExample();
+      var ballots = getSnacksExample();
       fillForm(ballots, 3);
     }
 
     ctrl.fillGeneratedExample = function () {
-      let candidates = ctrl.generatedExampleForm.candidatesText.split(/\r?\n/);
-      let ballots = [];
+      var candidates = ctrl.generatedExampleForm.candidatesText.split(/\r?\n/);
+      var ballots = [];
 
       for (var i = 0; i < ctrl.generatedExampleForm.votes; i++) {
         ballots.push(shuffle(candidates).slice(0));
@@ -60,7 +60,7 @@
     }
 
     function convertBallotsToText(ballots) {
-      let text = "";
+      var text = "";
       ballots.forEach(function (ballot) {
         ballot.forEach(function (candidate) {
           text += candidate + "\n";
@@ -71,47 +71,54 @@
     }
 
     function parseBallotsText(text) {
-      let ballots = [];
-      let ballotTexts = text.split(/\r?\n\r?\n/);
+      var ballots = [];
+      var ballotTexts = text.split(/\r?\n\r?\n/);
       ballotTexts.forEach(function (ballotText) {
-        let ballot = ballotText.split(/\r?\n/);
+        var ballot = ballotText.split(/\r?\n/);
+        ballot = ballot.map(function (candidate) { return getCandidateName(candidate); })
         ballots.push(ballot);
       });
       return ballots;
     }
 
+    function getCandidateName(candidate) {
+      return candidate.trim().replace(/\w\S*/g, function (name) {
+        return name.charAt(0).toUpperCase() + name.substr(1).toLowerCase();
+      })
+    }
+
     function getAndreaExample() {
-      let ballots = [];
-      for (let i = 0; i < 16; i++) {
+      var ballots = [];
+      for (var i = 0; i < 16; i++) {
         ballots.push(["Andrea", "Brad", "Carter", "Delilah"]);
       }
-      for (let i = 0; i < 24; i++) {
+      for (var i = 0; i < 24; i++) {
         ballots.push(["Andrea", "Carter", "Brad", "Delilah"]);
       }
-      for (let i = 0; i < 17; i++) {
+      for (var i = 0; i < 17; i++) {
         ballots.push(["Delilah", "Andrea", "Brad", "Carter"]);
       }
       return ballots;
     }
 
     function getSnacksExample() {
-      let ballots = [];
-      for (let i = 0; i < 4; i++) {
+      var ballots = [];
+      for (var i = 0; i < 4; i++) {
         ballots.push(["Oranges"]);
       }
-      for (let i = 0; i < 2; i++) {
+      for (var i = 0; i < 2; i++) {
         ballots.push(["Pears", "Oranges"]);
       }
-      for (let i = 0; i < 8; i++) {
+      for (var i = 0; i < 8; i++) {
         ballots.push(["Chocolate", "Strawberries"]);
       }
-      for (let i = 0; i < 4; i++) {
+      for (var i = 0; i < 4; i++) {
         ballots.push(["Chocolate", "Sweets"]);
       }
-      for (let i = 0; i < 1; i++) {
+      for (var i = 0; i < 1; i++) {
         ballots.push(["Strawberries"]);
       }
-      for (let i = 0; i < 1; i++) {
+      for (var i = 0; i < 1; i++) {
         ballots.push(["Sweets"]);
       }
       return ballots;
